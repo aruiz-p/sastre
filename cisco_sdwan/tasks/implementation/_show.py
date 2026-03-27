@@ -32,8 +32,15 @@ class DeviceInfo(NamedTuple):
     model: str
 
 
-def retrieve_rt_task(api_obj: Rest, rt_cls: type[RealtimeItem], device: DeviceInfo) -> tuple[DeviceInfo, Any]:
-    return device, rt_cls.get(api_obj, device.system_ip)
+def retrieve_rt_task(api_obj: Rest,
+                     rt_cls: type[RealtimeItem],
+                     device: DeviceInfo,
+                     api_params: Optional[dict[str, Any]] = None) -> tuple[DeviceInfo, Any]:
+    request_params = {'deviceId': device.system_ip}
+    if api_params is not None:
+        request_params.update(api_params)
+
+    return device, rt_cls.get(api_obj, **request_params)
 
 
 def table_fields(op_cls: type[OperationalItem], detail: bool, simple: bool) -> tuple[str, ...]:
@@ -169,6 +176,7 @@ class TaskShow(Task):
     def realtime(self, parsed_args, api: Rest) -> list[Table]:
         devices = self.selected_devices(parsed_args, api)
         pool_size = max(min(len(devices), THREAD_POOL_SIZE), 1)
+        api_params = getattr(parsed_args, 'api_params', None)
 
         result_tables = []
         for info, rt_cls in op_catalog_iter(OpType.RT, *parsed_args.cmd, version=api.server_version):
@@ -179,7 +187,8 @@ class TaskShow(Task):
 
             self.log_info(f'Retrieving {info.lower()} for {len(devices_in_scope)} devices')
             with futures.ThreadPoolExecutor(pool_size) as executor:
-                job_result_iter = executor.map(partial(retrieve_rt_task, api, rt_cls), devices_in_scope)
+                job_result_iter = executor.map(partial(retrieve_rt_task, api, rt_cls, api_params=api_params),
+                                               devices_in_scope)
 
             table = None
             fields = table_fields(rt_cls, parsed_args.detail, parsed_args.simple)
@@ -364,6 +373,7 @@ class ShowRealtimeArgs(ShowArgs):
     subtask_info: ConstStr = 'realtime'
     subtask_handler: ConstCallable = TaskShow.realtime
     cmd: list[str]
+    api_params: Optional[dict[str, Any]] = None
     detail: bool = False
     simple: bool = False
 
@@ -372,6 +382,14 @@ class ShowRealtimeArgs(ShowArgs):
     @classmethod
     def validate_cmd(cls, cmd_list: list[str]) -> list[str]:
         return validate_op_cmd(OpType.RT, cmd_list)
+
+    @field_validator('api_params')
+    @classmethod
+    def validate_api_params(cls, api_params: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+        if api_params is not None and 'deviceId' in api_params:
+            raise ValueError('api_params cannot override "deviceId"')
+
+        return api_params
 
 
 class ShowStateArgs(ShowArgs):

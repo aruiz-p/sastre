@@ -2630,6 +2630,12 @@ class DeviceOmpRoutesAdv(RealtimeItem):
     fields_std = ('vpn_id', 'prefix', 'to_peer', 'color', 'ip', 'protocol', 'metric', 'preference')
     fields_ext = ('tag', 'originator', 'site_id')
 
+@op_register('omp', 'rcvd-routes', 'OMP received routes')
+class DeviceOmpRoutesRcvd(RealtimeItem):
+    api_path = ApiPath('device/omp/routes/received', None, None, None)
+    fields_std = ('vpn_id', 'prefix', 'to_peer', 'color', 'ip', 'protocol', 'metric', 'preference')
+    fields_ext = ('tag', 'originator', 'site_id')
+
 
 @op_register('tunnel', 'stats', 'Tunnel statistics')
 class DeviceTunnelStats(RealtimeItem):
@@ -2689,6 +2695,27 @@ class HardwareEnvironment(RealtimeItem):
     def is_in_scope(cls, device_model: str) -> bool:
         return device_model not in SOFT_EDGE_SET
 
+@op_register('routing', 'rib-global', 'IP routing global')
+class DeviceRoutingRib(RealtimeItem):
+    api_path = ApiPath('device/ip/ipRoutes?routing-instance-name=default', None, None, None)
+    fields_std = ('route_destination_prefix', 'route_source_protocol', 'next_hop_next_hop_address',
+                  'next_hop_outgoing_interface','route_route_preference')
+    fields_ext = ('route_metric',)
+
+
+@op_register('routing', 'rib-vpn', 'IP routing vpn')
+class DeviceRoutingRib(RealtimeItem):
+    api_path = ApiPath('device/ip/ipRoutes?', None, None, None)
+    fields_std = ('routing_instance_name','route_destination_prefix', 'route_source_protocol', 'next_hop_next_hop_address',
+                  'route_route_preference')
+    fields_ext = ('route_metric',)
+
+@op_register('routing', 'rib-next-hop', 'IP routing table next-hop based')
+class DeviceRoutingRib(RealtimeItem):
+    api_path = ApiPath('device/ip/ipRoutes?', None, None, None)
+    fields_std = ('routing_instance_name','route_destination_prefix', 'route_source_protocol', 
+                  'next_hop_next_hop_address','route_route_preference')
+    fields_ext = ('route_metric',)
 
 #
 # Bulk Statistics Items

@@ -1,0 +1,64 @@
+metadata:
+  title: "Custom Ops Report"
+
+globals:
+  detail: true
+  system_ip: ["10.0.0.1", "10.0.0.2"]
+
+sections:
+  - name: "Software info"
+    task: "show realtime"
+    args:
+      cmd: ["software", "info"]
+
+  - name: "Control connections"
+    task: "show realtime"
+    args:
+      cmd: ["control", "connections"]
+
+  - name: "BFD sessions"
+    task: "show realtime"
+    args:
+      cmd: ["bfd", "sessions"]
+
+  - name: "OMP advertised routes"
+    task: "show realtime"
+    args:
+      cmd: ["omp", "adv-routes"]
+
+  - name: "OMP received routes"
+    task: "show realtime"
+    args:
+      cmd: ["omp", "rcvd-routes"]
+      api_params:
+        vpn-id: "1"
+
+  - name: "OMP peers"
+    task: "show realtime"
+    args:
+      cmd: ["omp", "peers"]
+
+  - name: "cEdge interface information"
+    task: "show realtime"
+    args:
+      cmd: ["interface", "cedge"]
+
+  - name: "IP routing global table"
+    task: "show realtime"
+    args:
+      cmd: ["routing", "rib-global"]
+
+  - name: "IP routing vpn table"
+    task: "show realtime"
+    args:
+      cmd: ["routing", "rib-vpn"]
+      api_params:
+        routing-instance-name: "1"
+
+  - name: "IP routing table next-hop based"
+    task: "show realtime"
+    args:
+      cmd: ["routing", "rib-next-hop"]
+      api_params:
+        routing-instance-name: "1"
+        next-hop-next-hop-address: "10.0.0.1"
