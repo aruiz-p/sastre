@@ -54,6 +54,7 @@ sections:
       cmd: ["routing", "rib-vpn"]
       api_params:
         routing-instance-name: "1"
+      include: "5.5.5.5"
 
   - name: "IP routing table next-hop based"
     task: "show realtime"

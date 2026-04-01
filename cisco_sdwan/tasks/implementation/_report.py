@@ -10,8 +10,8 @@ from pydantic import field_validator, model_validator, BaseModel, ValidationErro
 from cisco_sdwan.__version__ import __doc__ as title
 from cisco_sdwan.base.rest_api import Rest
 from cisco_sdwan.base.catalog import CATALOG_TAG_ALL, ordered_tags
-from cisco_sdwan.tasks.utils import TaskOptions, existing_workdir_type, filename_type, existing_file_type
-from cisco_sdwan.tasks.common import Task, Table, TaskException
+from cisco_sdwan.tasks.utils import TaskOptions, existing_workdir_type, filename_type, existing_file_type, regex_type
+from cisco_sdwan.tasks.common import Task, Table, TaskException, get_table_filters, filtered_tables
 from cisco_sdwan.tasks.models import TaskArgs, ConstCallable
 from cisco_sdwan.tasks.validators import validate_existing_file, validate_filename, validate_workdir, validate_json
 from ._list import TaskList, ListConfigArgs, ListCertificateArgs
@@ -224,6 +224,10 @@ class TaskReport(Task):
                                    help='generate diff between the specified previous report and the current report')
         create_parser.add_argument('--save-json', metavar='<filename>', type=filename_type,
                                    help='export report as JSON-formatted file')
+        create_parser.add_argument('--exclude', metavar='<regex>', type=regex_type,
+                                   help='exclude table rows matching the regular expression')
+        create_parser.add_argument('--include', metavar='<regex>', type=regex_type,
+                                   help='include table rows matching the regular expression, exclude all other rows')
         diff_parser = sub_tasks.add_parser('diff', help='generate diff between two reports')
         diff_parser.set_defaults(subtask_handler=TaskReport.subtask_diff)
         diff_parser.add_argument('report_a', metavar='<report a>', type=existing_file_type,
@@ -259,11 +263,15 @@ class TaskReport(Task):
         content_spec = load_content_spec(parsed_args.spec_file, parsed_args.spec_json, DEFAULT_CONTENT_SPEC)
 
         report = Report(parsed_args.file, metadata=content_spec.metadata)
+        filters = get_table_filters(exclude_regex=parsed_args.exclude, include_regex=parsed_args.include)
         for description, task_cls, task_args in self.section_iter(content_spec, api is not None, parsed_args.workdir):
             try:
                 task_output = task_cls().runner(task_args, api)
                 if task_output:
-                    report.add_section(description, task_output)
+                    if filters:
+                        task_output = filtered_tables(task_output, *filters)
+                    if task_output:
+                        report.add_section(description, task_output)
             except (TaskException, FileNotFoundError) as ex:
                 self.log_error(f'Task {task_cls.__name__} error: {ex}')
 
