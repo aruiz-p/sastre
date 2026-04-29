@@ -1,0 +1,32 @@
+metadata:
+  title: "AppQoe Realtime Report"
+
+globals:
+  detail: true
+  system_ip: ["10.245.0.3","10.18.0.1"]
+
+sections:
+  - name: "AppQoe Services Status"
+    task: "show realtime"
+    args:
+      cmd: ["appqoe", "services-status"]
+
+  - name: "DRE Service Status"
+    task: "show realtime"
+    args:
+      cmd: ["appqoe", "dre-status"]
+
+  - name: "DRE Peer Statistics"
+    task: "show realtime"
+    args:
+      cmd: ["appqoe", "dre-peer-stats"]
+
+  - name: "AppQoe Active Flows"
+    task: "show realtime"
+    args:
+      cmd: ["appqoe", "active-flows"]
+
+  - name: "AppQoe Closed Flows"
+    task: "show realtime"
+    args:
+      cmd: ["appqoe", "closed-flows"]

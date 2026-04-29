@@ -2717,6 +2717,42 @@ class DeviceRoutingRib(RealtimeItem):
                   'next_hop_next_hop_address','route_route_preference')
     fields_ext = ('route_metric',)
 
+
+@op_register('appqoe', 'services-status', 'AppQoe services status')
+class AppQoeServicesStatus(RealtimeItem):
+    api_path = ApiPath('device/appqoe/appqoe-services-status', None, None, None)
+    fields_std = ('vdevice_name', 'service', 'load_status', 'load_percentage')
+
+
+@op_register('appqoe', 'dre-status', 'DRE service status')
+class DreStatus(RealtimeItem):
+    api_path = ApiPath('device/dre/dre-status', None, None, None)
+    fields_std = ('vdevice_name', 'data_dre_uptime', 'appqoe_dre_status_health_status',
+                  'data_hs_change_time', 'data_cache_status', 'data_disk_cache_usage')
+
+
+@op_register('appqoe', 'dre-peer-stats', 'DRE peer statistics')
+class DrePeerStats(RealtimeItem):
+    api_path = ApiPath('device/dre/peer-stats', None, None, None)
+    fields_std = ('vdevice_name','appqoe_dre_stats_peer_hostname', 
+                  'appqoe_dre_stats_peer_system_ip','appqoe_dre_stats_peer_active_cons',
+                  'appqoe_dre_stats_peer_total_cons')
+
+
+@op_register('appqoe', 'active-flows', 'AppQoe active flows')
+class AppQoeActiveFlows(RealtimeItem):
+    api_path = ApiPath('device/appqoe/vpn-id', None, None, None)
+    fields_std = ('vpn_id', 'client_ip', 'client_port', 'server_ip',
+                  'server_port', 'services')
+
+
+@op_register('appqoe', 'closed-flows', 'AppQoe closed flows')
+class AppQoeClosedFlows(RealtimeItem):
+    api_path = ApiPath('device/appqoe/flow-expired', None, None, None)
+    fields_std = ('vpn_id', 'client_ip', 'client_port', 'server_ip',
+                  'server_port', 'services')
+
+
 #
 # Bulk Statistics Items
 #
